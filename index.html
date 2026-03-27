@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mineral Explorer - Your Ultimate Mineral Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light Theme Variables */
+            --bg-color: #f4f6f9;
+            --text-color: #2c3e50;
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            --dropdown-bg: #ffffff;
+            --dropdown-hover: #f1f2f6;
+            --border-color: #e0e6ed;
+            --text-muted: #7f8c8d;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme Variables */
+            --bg-color: #1a1a2e;
+            --text-color: #e0e0e0;
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --card-bg: rgba(30, 39, 73, 0.85);
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --dropdown-bg: #2d3436;
+            --dropdown-hover: #636e72;
+            --border-color: #34495e;
+            --text-muted: #b2bec3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(52, 152, 219, 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(108, 92, 231, 0.05), transparent 25%);
+        }
+
+        /* Navbar Styling */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Toggle Button */
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-switch {
+            display: inline-block;
+            height: 34px;
+            position: relative;
+            width: 60px;
+        }
+
+        .theme-switch input {
+            display: none;
+        }
+
+        .slider {
+            background-color: #ccc;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            background-color: #fff;
+            bottom: 4px;
+            content: "";
+            height: 26px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 26px;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Main Content Styling */
+        main {
+            flex: 1;
+            padding: 4rem 5%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-text {
+            text-align: center;
+            margin-bottom: 3rem;
+            max-width: 800px;
+        }
+
+        .hero-text h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-text p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Search Section Setup */
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 3rem;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            font-size: 1.2rem;
+            border: 2px solid var(--border-color);
+            border-radius: 50px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            outline: none;
+            box-shadow: var(--card-shadow);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .search-box:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.3);
+        }
+
+        /* Dropdown Styling */
+        .dropdown {
+            position: absolute;
+            top: 110%;
+            left: 5%;
+            right: 5%;
+            background: var(--dropdown-bg);
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            display: none;
+            z-index: 10;
+            border: 1px solid var(--border-color);
+        }
+
+        .dropdown.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: var(--dropdown-hover);
+            color: var(--primary-color);
+            padding-left: 1.8rem;
+        }
+
+        /* Mineral Display Card */
+        .mineral-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            display: none;
+            animation: slideUp 0.5s ease;
+        }
+
+        .mineral-card.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .mineral-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .mineral-title {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+        }
+
+        .mineral-formula {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        .properties-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .property-item {
+            background: rgba(127, 140, 141, 0.05);
+            padding: 1.2rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .property-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .property-value {
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            margin-top: 2rem;
+        }
+
+        /* Footer Styling */
+        footer {
+            background: var(--card-bg);
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+
+        footer p {
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-text h1 { font-size: 2.5rem; }
+            .mineral-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+            Mineralx
+        </div>
+        <div class="theme-switch-wrapper">
+            <label class="theme-switch" for="checkbox">
+                <input type="checkbox" id="checkbox" />
+                <div class="slider"></div>
+            </label>
+            <span style="margin-left: 10px; font-weight: 600;" id="theme-label">Light</span>
+        </div>
+    </nav>
+
+    <main>
+        <div class="hero-text">
+            <h1>Discover the Elements of Earth</h1>
+            <p>Search through our comprehensive database of minerals to explore their chemical properties, physical traits, and common uses. Type a letter or a full name below to begin your journey.</p>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-box" placeholder="Search for a mineral (e.g., Quartz, Pyrite)..." autocomplete="off">
+            <div id="dropdownList" class="dropdown"></div>
+        </div>
+
+        <div id="initialState" class="empty-state">
+            Start typing to discover amazing minerals...
+        </div>
+
+        <div id="mineralCard" class="mineral-card">
+            <div class="mineral-header">
+                <h2 id="mName" class="mineral-title">Mineral Name</h2>
+                <span id="mFormula" class="mineral-formula">Formula</span>
+            </div>
+            
+            <div class="properties-grid">
+                <div class="property-item">
+                    <div class="property-label">Crystal System</div>
+                    <div id="mSystem" class="property-value">-</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Color</div>
+                    <div id="mColor" class="property-value">-</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Hardness (Mohs)</div>
+                    <div id="mHardness" class="property-value">-</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Specific Gravity</div>
+                    <div id="mGravity" class="property-value">-</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Luster</div>
+                    <div id="mLuster" class="property-value">-</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Cleavage</div>
+                    <div id="mCleavage" class="property-value">-</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Streak</div>
+                    <div id="mStreak" class="property-value">-</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Form/Habit (Fracture)</div>
+                    <div id="mFracture" class="property-value">-</div>
+                </div>
+                <div class="property-item" style="grid-column: 1 / -1;">
+                    <div class="property-label">Group / Mag. Properties</div>
+                    <div id="mUses" class="property-value">-</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Mineralx. Data provided by geological surveys and enthusiasts. Developed with passion.</p>
+    </footer>
+
+    <script>
+        // Mineral Database (Sample from common geological structures)
+        const mineralData = [
+{ "name": "Actinolite", "formHabit": "Bladed, fibrous, radiating, acicular", "twinning": "Rare", "cleavages": "Perfect {110} at 56°/124°, uneven fracture", "color": "Green to dark green", "luster": "Vitreous to silky", "streak": "White to pale green", "hardness": "5–6", "tenacity": "Brittle to flexible", "opticalProperties": "Biaxial (-)", "specificGravity": "3.0–3.2", "group": "Amphibole (inosilicate)", "composition": "Ca₂(Mg,Fe)₅Si₈O₂₂(OH)₂", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Weakly paramagnetic (Fe-bearing)" },
+{ "name": "Aegirine", "formHabit": "Prismatic, acicular, fibrous", "twinning": "Simple or lamellar on {100}", "cleavages": "Good {110} (~87°), parting {100}, uneven fracture", "color": "Dark green to black", "luster": "Vitreous to resinous", "streak": "Pale yellowish-grey", "hardness": "6–6.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (-)", "specificGravity": "3.5–3.6", "group": "Pyroxene (inosilicate)", "composition": "NaFe³⁺Si₂O₆", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Paramagnetic (Fe³⁺)" },
+{ "name": "Albite", "formHabit": "Tabular, prismatic, massive", "twinning": "Polysynthetic (albite law) common", "cleavages": "Perfect {001}, good {010}, uneven fracture", "color": "White, colorless, grey", "luster": "Vitreous to pearly", "streak": "White", "hardness": "6–6.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (+) or (-)", "specificGravity": "2.60–2.65", "group": "Feldspar (tectosilicate)", "composition": "NaAlSi₃O₈", "crystalSystem": "Triclinic (1)", "magneticProperties": "Non-magnetic" },
+{ "name": "Alexandrite", "formHabit": "Prismatic, tabular", "twinning": "Cyclic or lamellar", "cleavages": "Good {110}, poor {100}", "color": "Green in daylight, red under incandescent light (color-change)", "luster": "Vitreous", "streak": "White", "hardness": "8.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "3.7–3.8", "group": "Chrysoberyl (oxide)", "composition": "BeAl₂O₄ (with Cr)", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Alunite", "formHabit": "Rhombohedral, massive, earthy", "twinning": "Rare", "cleavages": "Perfect {0001}, conchoidal fracture", "color": "White, grey, yellowish", "luster": "Vitreous to dull", "streak": "White", "hardness": "3.5–4", "tenacity": "Brittle", "opticalProperties": "Uniaxial (-)", "specificGravity": "2.6–2.9", "group": "Sulfate", "composition": "KAl₃(SO₄)₂(OH)₆", "crystalSystem": "Trigonal (3m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Amazonite", "formHabit": "Prismatic, massive", "twinning": "Polysynthetic (albite/pericline)", "cleavages": "Perfect {001}, good {010}", "color": "Green to blue-green", "luster": "Vitreous", "streak": "White", "hardness": "6–6.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (-)", "specificGravity": "2.56–2.58", "group": "Feldspar (K-feldspar, tectosilicate)", "composition": "KAlSi₃O₈ (with Pb)", "crystalSystem": "Triclinic (1)", "magneticProperties": "Non-magnetic" },
+{ "name": "Amethyst", "formHabit": "Prismatic, hexagonal", "twinning": "Dauphiné, Brazil law", "cleavages": "None, conchoidal fracture", "color": "Purple", "luster": "Vitreous", "streak": "White", "hardness": "7", "tenacity": "Brittle", "opticalProperties": "Uniaxial (+)", "specificGravity": "2.65", "group": "Quartz (tectosilicate)", "composition": "SiO₂", "crystalSystem": "Trigonal (32)", "magneticProperties": "Non-magnetic (diamagnetic)" },
+{ "name": "Amphibole (Group)", "formHabit": "Prismatic, fibrous, bladed", "twinning": "Variable", "cleavages": "Perfect {110} at 56°/124°, uneven", "color": "Variable (green, black, etc.)", "luster": "Vitreous to silky", "streak": "Variable white", "hardness": "5–6", "tenacity": "Brittle to flexible", "opticalProperties": "Biaxial (-/+)", "specificGravity": "2.9–3.5", "group": "Amphibole group", "composition": "Variable double-chain silicates", "crystalSystem": "Mostly monoclinic", "magneticProperties": "Variable (often paramagnetic if Fe-rich)" },
+{ "name": "Analcime", "formHabit": "Trapezoidal crystals, cubic-like, massive", "twinning": "Rare", "cleavages": "Poor {100}, conchoidal fracture", "color": "Colorless, white", "luster": "Vitreous", "streak": "White", "hardness": "5–5.5", "tenacity": "Brittle", "opticalProperties": "Isotropic", "specificGravity": "2.24–2.29", "group": "Zeolite (tectosilicate)", "composition": "NaAlSi₂O₆·H₂O", "crystalSystem": "Cubic (4/m 3 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Anatase", "formHabit": "Octahedral, pyramidal", "twinning": "Rare", "cleavages": "Perfect {001}, good {011}, conchoidal", "color": "Brown, black, blue", "luster": "Adamantine to metallic", "streak": "White to pale yellow", "hardness": "5.5–6", "tenacity": "Brittle", "opticalProperties": "Uniaxial (-)", "specificGravity": "3.8–4.0", "group": "Oxide (TiO₂ polymorph)", "composition": "TiO₂", "crystalSystem": "Tetragonal (4/m 2/m 2/m)", "magneticProperties": "Non-magnetic (weakly)" },
+{ "name": "Andalusite", "formHabit": "Prismatic, square cross-section", "twinning": "Rare", "cleavages": "Good {110}, uneven fracture", "color": "Pink, brown, green", "luster": "Vitreous", "streak": "White", "hardness": "6.5–7.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (-)", "specificGravity": "3.1–3.2", "group": "Nesosilicate", "composition": "Al₂SiO₅", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Anglesite", "formHabit": "Tabular, prismatic, massive", "twinning": "Rare", "cleavages": "Perfect {001}, good {210}, conchoidal", "color": "Colorless, white, grey", "luster": "Adamantine to vitreous", "streak": "White", "hardness": "2.5–3", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "6.3–6.4", "group": "Sulfate", "composition": "PbSO₄", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Anhydrite", "formHabit": "Tabular, fibrous, massive", "twinning": "Rare", "cleavages": "Perfect {010}, good {100} & {001}, uneven", "color": "Colorless, white, grey", "luster": "Vitreous to pearly", "streak": "White", "hardness": "3–3.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "2.9–3.0", "group": "Sulfate", "composition": "CaSO₄", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Anorthite", "formHabit": "Tabular, prismatic", "twinning": "Polysynthetic", "cleavages": "Perfect {001}, good {010}", "color": "White, grey", "luster": "Vitreous", "streak": "White", "hardness": "6–6.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "2.74–2.76", "group": "Feldspar (plagioclase, tectosilicate)", "composition": "CaAl₂Si₂O₈", "crystalSystem": "Triclinic (1)", "magneticProperties": "Non-magnetic" },
+{ "name": "Apatite", "formHabit": "Prismatic, hexagonal, massive", "twinning": "Rare", "cleavages": "Poor {0001}, uneven to conchoidal", "color": "Green, blue, yellow, colorless", "luster": "Vitreous to resinous", "streak": "White", "hardness": "5", "tenacity": "Brittle", "opticalProperties": "Uniaxial (-)", "specificGravity": "3.1–3.2", "group": "Phosphate", "composition": "Ca₅(PO₄)₃(F,Cl,OH)", "crystalSystem": "Hexagonal (6/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Apophyllite", "formHabit": "Tabular, prismatic, cubic-like", "twinning": "Rare", "cleavages": "Perfect {001}, uneven", "color": "Colorless, white, green", "luster": "Vitreous to pearly", "streak": "White", "hardness": "4.5–5", "tenacity": "Brittle", "opticalProperties": "Uniaxial (+) or (-)", "specificGravity": "2.3–2.4", "group": "Phyllosilicate", "composition": "KCa₄Si₈O₂₀(F,OH)·8H₂O", "crystalSystem": "Tetragonal (4/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Aragonite", "formHabit": "Prismatic, acicular, fibrous", "twinning": "Common (cyclic)", "cleavages": "Poor {010}, conchoidal to splintery", "color": "Colorless, white, grey", "luster": "Vitreous", "streak": "White", "hardness": "3.5–4", "tenacity": "Brittle", "opticalProperties": "Biaxial (-)", "specificGravity": "2.93", "group": "Carbonate", "composition": "CaCO₃", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Arfvedsonite", "formHabit": "Prismatic, fibrous", "twinning": "Simple", "cleavages": "Perfect {110} at ~56°/124°", "color": "Black, dark green", "luster": "Vitreous", "streak": "Dark bluish-grey", "hardness": "5.5–6", "tenacity": "Brittle", "opticalProperties": "Biaxial (-)", "specificGravity": "3.3–3.5", "group": "Amphibole", "composition": "Na₃(Fe²⁺,Mg)₄Fe³⁺Si₈O₂₂(OH)₂", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Paramagnetic (Fe-rich)" },
+{ "name": "Augite", "formHabit": "Prismatic, short crystals", "twinning": "Simple or lamellar", "cleavages": "Good {110} at ~87°, uneven", "color": "Black, dark green", "luster": "Vitreous", "streak": "Grey-green", "hardness": "5–6.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "3.2–3.6", "group": "Pyroxene", "composition": "(Ca,Na)(Mg,Fe,Al)(Si,Al)₂O₆", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Paramagnetic (Fe)" },
+{ "name": "Azurite", "formHabit": "Prismatic, tabular, massive", "twinning": "Rare", "cleavages": "Perfect {011}, conchoidal", "color": "Deep blue", "luster": "Vitreous to adamantine", "streak": "Light blue", "hardness": "3.5–4", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "3.7–3.8", "group": "Carbonate", "composition": "Cu₃(CO₃)₂(OH)₂", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Non-magnetic (weakly diamagnetic)" },
+{ "name": "Barite (Baryte)", "formHabit": "Tabular, prismatic, massive", "twinning": "Rare", "cleavages": "Perfect {001}, good {210}, uneven", "color": "Colorless, white, blue", "luster": "Vitreous to pearly", "streak": "White", "hardness": "3–3.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "4.5", "group": "Sulfate", "composition": "BaSO₄", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Bastnäsite", "formHabit": "Tabular, prismatic, massive", "twinning": "Rare", "cleavages": "Perfect {0001}, uneven", "color": "Yellow, brown, reddish", "luster": "Vitreous to greasy", "streak": "White", "hardness": "4–5", "tenacity": "Brittle", "opticalProperties": "Uniaxial (-)", "specificGravity": "4.9–5.2", "group": "Carbonate-fluoride", "composition": "(Ce,La)CO₃F", "crystalSystem": "Hexagonal (6/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Benitoite", "formHabit": "Tabular, pyramidal", "twinning": "Rare", "cleavages": "Poor {1010}, conchoidal", "color": "Blue", "luster": "Vitreous", "streak": "White", "hardness": "6–6.5", "tenacity": "Brittle", "opticalProperties": "Uniaxial (+)", "specificGravity": "3.6", "group": "Cyclosilicate", "composition": "BaTiSi₃O₉", "crystalSystem": "Hexagonal (6/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Beryl", "formHabit": "Prismatic, hexagonal", "twinning": "Rare", "cleavages": "Poor {0001}, uneven to conchoidal", "color": "Green, blue, colorless (varieties include emerald, aquamarine, morganite)", "luster": "Vitreous", "streak": "White", "hardness": "7.5–8", "tenacity": "Brittle", "opticalProperties": "Uniaxial (-)", "specificGravity": "2.6–2.9", "group": "Cyclosilicate", "composition": "Be₃Al₂Si₆O₁₈", "crystalSystem": "Hexagonal (6/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Biotite", "formHabit": "Tabular, flaky, micaceous", "twinning": "Rare", "cleavages": "Perfect basal {001}", "color": "Black, dark brown", "luster": "Vitreous to pearly", "streak": "Grey-white", "hardness": "2.5–3", "tenacity": "Flexible, elastic", "opticalProperties": "Biaxial (-)", "specificGravity": "2.7–3.3", "group": "Mica (phyllosilicate)", "composition": "K(Mg,Fe)₃AlSi₃O₁₀(OH,F)₂", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Paramagnetic (Fe)" },
+{ "name": "Bismuthinite", "formHabit": "Prismatic, acicular, massive", "twinning": "Rare", "cleavages": "Perfect {010}, uneven", "color": "Lead-grey to tin-white", "luster": "Metallic", "streak": "Lead-grey", "hardness": "2", "tenacity": "Brittle to sectile", "opticalProperties": "Opaque", "specificGravity": "6.8", "group": "Sulfide", "composition": "Bi₂S₃", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Diamagnetic" },
+{ "name": "Bornite", "formHabit": "Massive, granular", "twinning": "Rare", "cleavages": "None, uneven fracture", "color": "Copper-red to iridescent purple", "luster": "Metallic", "streak": "Grey-black", "hardness": "3", "tenacity": "Brittle", "opticalProperties": "Opaque", "specificGravity": "4.9–5.3", "group": "Sulfide", "composition": "Cu₅FeS₄", "crystalSystem": "Orthorhombic (pseudo-cubic)", "magneticProperties": "Weakly magnetic" },
+{ "name": "Brucite", "formHabit": "Tabular, fibrous, massive", "twinning": "Rare", "cleavages": "Perfect {0001}, uneven", "color": "White, grey, green", "luster": "Waxy to vitreous", "streak": "White", "hardness": "2.5–3", "tenacity": "Flexible", "opticalProperties": "Uniaxial (+)", "specificGravity": "2.4", "group": "Hydroxide", "composition": "Mg(OH)₂", "crystalSystem": "Trigonal (3m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Calcite", "formHabit": "Rhombohedral, scalenohedral, massive", "twinning": "Common (glide)", "cleavages": "Perfect {10-11} rhombohedral, conchoidal", "color": "Colorless, white, various", "luster": "Vitreous", "streak": "White", "hardness": "3", "tenacity": "Brittle", "opticalProperties": "Uniaxial (-)", "specificGravity": "2.71", "group": "Carbonate", "composition": "CaCO₃", "crystalSystem": "Trigonal (3 2/m)", "magneticProperties": "Diamagnetic" },
+{ "name": "Carnelian", "formHabit": "Massive, botryoidal", "twinning": "None", "cleavages": "None, conchoidal", "color": "Red to orange", "luster": "Waxy to vitreous", "streak": "White", "hardness": "6.5–7", "tenacity": "Brittle", "opticalProperties": "Uniaxial (+)", "specificGravity": "2.58–2.64", "group": "Quartz (cryptocrystalline)", "composition": "SiO₂", "crystalSystem": "Trigonal", "magneticProperties": "Non-magnetic" },
+{ "name": "Cassiterite", "formHabit": "Prismatic, pyramidal, massive", "twinning": "Common", "cleavages": "Poor {100} & {110}, uneven to subconchoidal", "color": "Brown, black", "luster": "Adamantine to metallic", "streak": "White to pale brown", "hardness": "6–7", "tenacity": "Brittle", "opticalProperties": "Uniaxial (+)", "specificGravity": "6.8–7.1", "group": "Oxide", "composition": "SnO₂", "crystalSystem": "Tetragonal (4/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Celestine", "formHabit": "Tabular, prismatic, fibrous", "twinning": "Rare", "cleavages": "Perfect {001}, good {210}, uneven", "color": "Colorless, blue, white", "luster": "Vitreous to pearly", "streak": "White", "hardness": "3–3.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "3.9–4.0", "group": "Sulfate", "composition": "SrSO₄", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Cerussite", "formHabit": "Tabular, prismatic, fibrous", "twinning": "Common (cyclic)", "cleavages": "Good {110}, {021}, conchoidal", "color": "Colorless, white, grey", "luster": "Adamantine to vitreous", "streak": "White", "hardness": "3–3.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "6.5", "group": "Carbonate", "composition": "PbCO₃", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Diamagnetic" },
+{ "name": "Chalcedony", "formHabit": "Botryoidal, massive, fibrous", "twinning": "None", "cleavages": "None, conchoidal", "color": "Various (grey, white, etc.)", "luster": "Waxy to vitreous", "streak": "White", "hardness": "6.5–7", "tenacity": "Brittle", "opticalProperties": "Uniaxial (+)", "specificGravity": "2.58–2.64", "group": "Quartz (cryptocrystalline)", "composition": "SiO₂", "crystalSystem": "Trigonal", "magneticProperties": "Non-magnetic" },
+{ "name": "Chalcocite", "formHabit": "Massive, tabular", "twinning": "Rare", "cleavages": "Poor {110}, conchoidal", "color": "Black to lead-grey", "luster": "Metallic", "streak": "Black", "hardness": "2.5–3", "tenacity": "Brittle to sectile", "opticalProperties": "Opaque", "specificGravity": "5.5–5.8", "group": "Sulfide", "composition": "Cu₂S", "crystalSystem": "Orthorhombic (pseudo-hexagonal)", "magneticProperties": "Diamagnetic" },
+{ "name": "Chalcopyrite", "formHabit": "Tetrahedral, massive", "twinning": "Rare", "cleavages": "Poor {011}, uneven", "color": "Brass-yellow to iridescent", "luster": "Metallic", "streak": "Green-black", "hardness": "3.5–4", "tenacity": "Brittle", "opticalProperties": "Opaque", "specificGravity": "4.1–4.3", "group": "Sulfide", "composition": "CuFeS₂", "crystalSystem": "Tetragonal (4 2/m)", "magneticProperties": "Weakly magnetic" },
+{ "name": "Chromite", "formHabit": "Octahedral, massive", "twinning": "Rare", "cleavages": "None, uneven", "color": "Black", "luster": "Metallic to submetallic", "streak": "Brown", "hardness": "5.5", "tenacity": "Brittle", "opticalProperties": "Isotropic (opaque)", "specificGravity": "4.5–4.8", "group": "Spinel (oxide)", "composition": "FeCr₂O₄", "crystalSystem": "Cubic (4/m 3 2/m)", "magneticProperties": "Weakly magnetic" },
+{ "name": "Chrysoberyl", "formHabit": "Tabular, prismatic", "twinning": "Cyclic twinning common", "cleavages": "Good {110}, poor {100}", "color": "Green, yellow, brown", "luster": "Vitreous", "streak": "White", "hardness": "8.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "3.7–3.8", "group": "Oxide", "composition": "BeAl₂O₄", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Chrysocolla", "formHabit": "Botryoidal, massive, earthy", "twinning": "None", "cleavages": "None, conchoidal to uneven", "color": "Blue to green", "luster": "Vitreous to earthy", "streak": "White to pale blue", "hardness": "2–4", "tenacity": "Brittle to sectile", "opticalProperties": "Isotropic or weakly birefringent", "specificGravity": "2.0–2.4", "group": "Phyllosilicate", "composition": "Cu₂₋ₓAlₓ(H₂Si₂O₅)(OH)₄·nH₂O", "crystalSystem": "Orthorhombic or amorphous", "magneticProperties": "Non-magnetic" },
+{ "name": "Copper (native)", "formHabit": "Dendritic, massive, wire-like", "twinning": "None", "cleavages": "None, hackly fracture", "color": "Copper-red", "luster": "Metallic", "streak": "Copper-red", "hardness": "2.5–3", "tenacity": "Malleable, ductile", "opticalProperties": "Opaque", "specificGravity": "8.9", "group": "Native element", "composition": "Cu", "crystalSystem": "Cubic (4/m 3 2/m)", "magneticProperties": "Diamagnetic" },
+{ "name": "Chrysotile", "formHabit": "Fibrous, asbestiform", "twinning": "None", "cleavages": "None (fibrous), splintery", "color": "White, green, grey", "luster": "Silky", "streak": "White", "hardness": "2.5–4", "tenacity": "Flexible", "opticalProperties": "Biaxial (-)", "specificGravity": "2.5–2.6", "group": "Serpentine (phyllosilicate)", "composition": "Mg₃Si₂O₅(OH)₄", "crystalSystem": "Monoclinic (fibrous)", "magneticProperties": "Non-magnetic" },
+{ "name": "Cinnabar", "formHabit": "Rhombohedral, massive", "twinning": "Rare", "cleavages": "Perfect {10-11}, uneven", "color": "Red", "luster": "Adamantine to dull", "streak": "Scarlet-red", "hardness": "2–2.5", "tenacity": "Brittle to sectile", "opticalProperties": "Uniaxial (+)", "specificGravity": "8.1", "group": "Sulfide", "composition": "HgS", "crystalSystem": "Trigonal (3 2/m)", "magneticProperties": "Diamagnetic" },
+{ "name": "Clinozoisite", "formHabit": "Prismatic, fibrous", "twinning": "Rare", "cleavages": "Perfect {001}, uneven", "color": "Green, grey", "luster": "Vitreous", "streak": "White", "hardness": "6–7", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "3.2–3.4", "group": "Epidote group", "composition": "Ca₂Al₃(SiO₄)(Si₂O₇)O(OH)", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Coal", "formHabit": "Massive, layered", "twinning": "None", "cleavages": "None, uneven", "color": "Black", "luster": "Dull to vitreous", "streak": "Black", "hardness": "1–3 (variable)", "tenacity": "Brittle", "opticalProperties": "Opaque", "specificGravity": "1.2–1.8", "group": "Organic", "composition": "Carbon-rich (variable)", "crystalSystem": "Amorphous", "magneticProperties": "Non-magnetic" },
+{ "name": "Cobaltite", "formHabit": "Cubic, pyritohedral", "twinning": "Rare", "cleavages": "Good {100}, uneven", "color": "Silver-white to reddish", "luster": "Metallic", "streak": "Grey-black", "hardness": "5.5", "tenacity": "Brittle", "opticalProperties": "Opaque", "specificGravity": "6.0–6.3", "group": "Sulfide (arsenide)", "composition": "CoAsS", "crystalSystem": "Cubic (2 3)", "magneticProperties": "Magnetic (weakly)" },
+{ "name": "Colemanite", "formHabit": "Prismatic, massive", "twinning": "Rare", "cleavages": "Perfect {010}, good {001}, conchoidal", "color": "Colorless, white", "luster": "Vitreous to dull", "streak": "White", "hardness": "4.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "2.4", "group": "Borate", "composition": "Ca₂B₆O₁₁·5H₂O", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Corundum", "formHabit": "Prismatic, barrel-shaped, tabular", "twinning": "Lamellar on {10-11}", "cleavages": "None, conchoidal to uneven", "color": "Various (red = ruby, blue = sapphire)", "luster": "Vitreous to adamantine", "streak": "White", "hardness": "9", "tenacity": "Brittle", "opticalProperties": "Uniaxial (-)", "specificGravity": "3.95–4.1", "group": "Oxide", "composition": "Al₂O₃", "crystalSystem": "Trigonal (3 2/m)", "magneticProperties": "Non-magnetic (diamagnetic)" },
+{ "name": "Covellite", "formHabit": "Tabular, massive", "twinning": "Rare", "cleavages": "Perfect {0001}, uneven", "color": "Indigo-blue", "luster": "Metallic to submetallic", "streak": "Black to grey", "hardness": "1.5–2", "tenacity": "Flexible (thin)", "opticalProperties": "Opaque", "specificGravity": "4.6–4.8", "group": "Sulfide", "composition": "CuS", "crystalSystem": "Hexagonal (6/m 2/m 2/m)", "magneticProperties": "Diamagnetic" },
+{ "name": "Cuprite", "formHabit": "Octahedral, cubic, massive", "twinning": "Rare", "cleavages": "None, conchoidal to uneven", "color": "Red to black", "luster": "Adamantine to metallic", "streak": "Brownish-red", "hardness": "3.5–4", "tenacity": "Brittle", "opticalProperties": "Opaque", "specificGravity": "6.1", "group": "Oxide", "composition": "Cu₂O", "crystalSystem": "Cubic (4 3 2)", "magneticProperties": "Diamagnetic" },
+{ "name": "Danburite", "formHabit": "Prismatic", "twinning": "Rare", "cleavages": "Poor {001}, uneven", "color": "Colorless, yellow, brown", "luster": "Vitreous", "streak": "White", "hardness": "7", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "2.97–3.02", "group": "Tectosilicate", "composition": "CaB₂Si₂O₈", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Datolite", "formHabit": "Short prismatic, massive", "twinning": "Rare", "cleavages": "None, conchoidal", "color": "Colorless, white, green", "luster": "Vitreous", "streak": "White", "hardness": "5–5.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (-)", "specificGravity": "2.9–3.0", "group": "Nesosilicate", "composition": "CaBSiO₄(OH)", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Diamond", "formHabit": "Octahedral, dodecahedral", "twinning": "Common", "cleavages": "Perfect {111}, conchoidal", "color": "Colorless, yellow, etc.", "luster": "Adamantine", "streak": "White", "hardness": "10", "tenacity": "Brittle", "opticalProperties": "Isotropic", "specificGravity": "3.52", "group": "Native element", "composition": "C", "crystalSystem": "Cubic (4/m 3 2/m)", "magneticProperties": "Diamagnetic" },
+{ "name": "Diaspore", "formHabit": "Prismatic, platy, acicular", "twinning": "Rare", "cleavages": "Perfect {010}, conchoidal", "color": "White, grey, brown", "luster": "Vitreous to pearly", "streak": "White", "hardness": "6.5–7", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "3.3–3.5", "group": "Oxide-hydroxide", "composition": "AlO(OH)", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Diopside", "formHabit": "Prismatic, columnar", "twinning": "Simple or lamellar", "cleavages": "Good {110} at ~87°, uneven", "color": "Green, grey", "luster": "Vitreous", "streak": "White to grey", "hardness": "5.5–6.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "3.2–3.6", "group": "Pyroxene", "composition": "CaMgSi₂O₆", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Non-magnetic (weak)" },
+{ "name": "Dolomite", "formHabit": "Rhombohedral, massive", "twinning": "Common (glide)", "cleavages": "Perfect {10-11} rhombohedral, conchoidal", "color": "White, grey, pink", "luster": "Vitreous to pearly", "streak": "White", "hardness": "3.5–4", "tenacity": "Brittle", "opticalProperties": "Uniaxial (-)", "specificGravity": "2.84", "group": "Carbonate", "composition": "CaMg(CO₃)₂", "crystalSystem": "Trigonal (3)", "magneticProperties": "Diamagnetic" },
+{ "name": "Epidote", "formHabit": "Prismatic, fibrous", "twinning": "Rare", "cleavages": "Perfect {001}, uneven", "color": "Green to yellow-green", "luster": "Vitreous", "streak": "Grey-white", "hardness": "6–7", "tenacity": "Brittle", "opticalProperties": "Biaxial (-)", "specificGravity": "3.3–3.5", "group": "Sorosilicates", "composition": "Ca₂(Al,Fe)₃(SiO₄)(Si₂O₇)O(OH)", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Epsomite", "formHabit": "Acicular, fibrous, efflorescent", "twinning": "Rare", "cleavages": "Perfect {010}, conchoidal", "color": "White, colorless", "luster": "Vitreous to silky", "streak": "White", "hardness": "2–2.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (-)", "specificGravity": "1.68", "group": "Sulfate", "composition": "MgSO₄·7H₂O", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Feldspar (Group)", "formHabit": "Prismatic, tabular, massive", "twinning": "Polysynthetic common", "cleavages": "Perfect {001}, good {010}", "color": "Variable (white, pink, green)", "luster": "Vitreous to pearly", "streak": "White", "hardness": "6–6.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (+/-)", "specificGravity": "2.5–2.7", "group": "Tectosilicate group", "composition": "Variable K/Na/Ca aluminosilicates", "crystalSystem": "Triclinic or monoclinic", "magneticProperties": "Non-magnetic" },
+{ "name": "Fluorite", "formHabit": "Cubic, octahedral", "twinning": "Common on {111}", "cleavages": "Perfect {111} octahedral, conchoidal", "color": "Variable (purple, green, etc.)", "luster": "Vitreous", "streak": "White", "hardness": "4", "tenacity": "Brittle", "opticalProperties": "Isotropic", "specificGravity": "3.18", "group": "Halide", "composition": "CaF₂", "crystalSystem": "Cubic (4/m 3 2/m)", "magneticProperties": "Diamagnetic" },
+{ "name": "Galena", "formHabit": "Cubic, octahedral", "twinning": "Rare", "cleavages": "Perfect {100} cubic, subconchoidal", "color": "Lead-grey", "luster": "Metallic", "streak": "Lead-grey", "hardness": "2.5", "tenacity": "Brittle to sectile", "opticalProperties": "Opaque", "specificGravity": "7.4–7.6", "group": "Sulfide", "composition": "PbS", "crystalSystem": "Cubic (4/m 3 2/m)", "magneticProperties": "Diamagnetic" },
+{ "name": "Garnet (Group)", "formHabit": "Dodecahedral, trapezohedral", "twinning": "Rare", "cleavages": "None, conchoidal to uneven", "color": "Variable (red, green, etc.)", "luster": "Vitreous to resinous", "streak": "White", "hardness": "6.5–7.5", "tenacity": "Brittle", "opticalProperties": "Isotropic (most)", "specificGravity": "3.5–4.3", "group": "Nesosilicate group", "composition": "Variable X₃Y₂(SiO₄)₃", "crystalSystem": "Cubic (4/m 3 2/m)", "magneticProperties": "Variable (some Fe-rich paramagnetic)" },
+{ "name": "Gibbsite", "formHabit": "Tabular, platy, earthy", "twinning": "None", "cleavages": "Perfect {001}, uneven", "color": "White, grey, greenish", "luster": "Pearly to dull", "streak": "White", "hardness": "2.5–3.5", "tenacity": "Flexible (thin)", "opticalProperties": "Biaxial (+)", "specificGravity": "2.4", "group": "Hydroxide", "composition": "Al(OH)₃", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Goethite", "formHabit": "Acicular, fibrous, massive", "twinning": "Rare", "cleavages": "Perfect {010}, uneven", "color": "Yellow-brown to black", "luster": "Adamantine to dull", "streak": "Yellow-brown", "hardness": "5–5.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (-)", "specificGravity": "4.3", "group": "Oxide-hydroxide", "composition": "FeO(OH)", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Weakly magnetic" },
+{ "name": "Gold (native)", "formHabit": "Dendritic, nugget, wire", "twinning": "None", "cleavages": "None, hackly", "color": "Gold-yellow", "luster": "Metallic", "streak": "Gold-yellow", "hardness": "2.5–3", "tenacity": "Malleable, ductile", "opticalProperties": "Opaque", "specificGravity": "19.3", "group": "Native element", "composition": "Au", "crystalSystem": "Cubic (4/m 3 2/m)", "magneticProperties": "Diamagnetic" },
+{ "name": "Graphite", "formHabit": "Tabular, flaky, massive", "twinning": "None", "cleavages": "Perfect {0001} basal, uneven", "color": "Black", "luster": "Metallic to dull", "streak": "Black", "hardness": "1–2", "tenacity": "Flexible, sectile", "opticalProperties": "Opaque", "specificGravity": "2.09–2.23", "group": "Native element", "composition": "C", "crystalSystem": "Hexagonal (6/m 2/m 2/m)", "magneticProperties": "Diamagnetic" },
+{ "name": "Gypsum", "formHabit": "Tabular, fibrous (selenite), massive", "twinning": "Rare (swallow-tail)", "cleavages": "Perfect {010}, good {100} & {011}, splintery", "color": "Colorless, white", "luster": "Vitreous to silky", "streak": "White", "hardness": "2", "tenacity": "Flexible (thin)", "opticalProperties": "Biaxial (+)", "specificGravity": "2.3", "group": "Sulfate", "composition": "CaSO₄·2H₂O", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Halite", "formHabit": "Cubic", "twinning": "Rare", "cleavages": "Perfect {100} cubic, conchoidal", "color": "Colorless, white, red", "luster": "Vitreous", "streak": "White", "hardness": "2.5", "tenacity": "Brittle", "opticalProperties": "Isotropic", "specificGravity": "2.16", "group": "Halide", "composition": "NaCl", "crystalSystem": "Cubic (4/m 3 2/m)", "magneticProperties": "Diamagnetic" },
+{ "name": "Hematite", "formHabit": "Tabular, reniform, massive", "twinning": "Lamellar", "cleavages": "None (parting {0001}), uneven", "color": "Steel-grey to red", "luster": "Metallic to dull", "streak": "Red to reddish-brown", "hardness": "5–6", "tenacity": "Brittle", "opticalProperties": "Opaque", "specificGravity": "5.26", "group": "Oxide", "composition": "Fe₂O₃", "crystalSystem": "Trigonal (3 2/m)", "magneticProperties": "Weakly magnetic (antiferromagnetic)" },
+{ "name": "Hemimorphite", "formHabit": "Prismatic, botryoidal, tabular", "twinning": "Rare", "cleavages": "Perfect {110}, conchoidal", "color": "White, blue, green", "luster": "Vitreous", "streak": "White", "hardness": "4.5–5", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "3.4–3.5", "group": "Nesosilicate", "composition": "Zn₄Si₂O₇(OH)₂·H₂O", "crystalSystem": "Orthorhombic (mm2)", "magneticProperties": "Non-magnetic" },
+{ "name": "Hessonite", "formHabit": "Dodecahedral", "twinning": "Rare", "cleavages": "None, conchoidal", "color": "Orange-brown", "luster": "Vitreous to resinous", "streak": "White", "hardness": "6.5–7.5", "tenacity": "Brittle", "opticalProperties": "Isotropic", "specificGravity": "3.6–3.7", "group": "Garnet", "composition": "Ca₃Al₂(SiO₄)₃ (with Fe)", "crystalSystem": "Cubic", "magneticProperties": "Non-magnetic" },
+{ "name": "Howlite", "formHabit": "Nodular, massive, tabular", "twinning": "None", "cleavages": "None, uneven to conchoidal", "color": "White, grey", "luster": "Dull to vitreous", "streak": "White", "hardness": "3.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (-)", "specificGravity": "2.5–2.6", "group": "Borosilicate", "composition": "Ca₂B₅SiO₉(OH)₅", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Ilmenite", "formHabit": "Tabular, massive", "twinning": "Lamellar", "cleavages": "None, conchoidal", "color": "Black", "luster": "Metallic to submetallic", "streak": "Black", "hardness": "5–6", "tenacity": "Brittle", "opticalProperties": "Opaque", "specificGravity": "4.7–4.8", "group": "Oxide", "composition": "FeTiO₃", "crystalSystem": "Trigonal (3)", "magneticProperties": "Weakly magnetic" },
+{ "name": "Iolite (Cordierite)", "formHabit": "Prismatic, massive", "twinning": "Sector twinning", "cleavages": "Poor {100} & {010}, uneven", "color": "Blue, violet", "luster": "Vitreous", "streak": "White", "hardness": "7–7.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (-)", "specificGravity": "2.5–2.8", "group": "Cyclosilicate", "composition": "(Mg,Fe)₂Al₄Si₅O₁₈", "crystalSystem": "Orthorhombic (2/m 2/m 2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Jadeite", "formHabit": "Massive, fibrous", "twinning": "None", "cleavages": "Good {110}, splintery", "color": "Green, white, lavender", "luster": "Vitreous to greasy", "streak": "White", "hardness": "6.5–7", "tenacity": "Tough", "opticalProperties": "Biaxial (+)", "specificGravity": "3.3–3.5", "group": "Pyroxene", "composition": "NaAlSi₂O₆", "crystalSystem": "Monoclinic (2/m)", "magneticProperties": "Non-magnetic" },
+{ "name": "Jasper", "formHabit": "Massive, nodular", "twinning": "None", "cleavages": "None, conchoidal", "color": "Red, brown, yellow", "luster": "Dull to waxy", "streak": "White", "hardness": "6.5–7", "tenacity": "Brittle", "opticalProperties": "Uniaxial (+)", "specificGravity": "~2.6", "group": "Quartz", "composition": "SiO₂", "crystalSystem": "Trigonal", "magneticProperties": "Non-magnetic" },
+{ "name": "Kyanite", "formHabit": "Bladed, fibrous", "twinning": "Rare", "cleavages": "Perfect {100}, good {010}, splintery", "color": "Blue, white, grey", "luster": "Vitreous to pearly", "streak": "White", "hardness": "4–7 (anisotropic)", "tenacity": "Brittle", "opticalProperties": "Biaxial (-)", "specificGravity": "3.5–3.7", "group": "Nesosilicate", "composition": "Al₂SiO₅", "crystalSystem": "Triclinic (1)", "magneticProperties": "Non-magnetic" },
+{ "name": "Labradorite", "formHabit": "Tabular, massive (plagioclase)", "twinning": "Polysynthetic", "cleavages": "Perfect {001}, good {010}", "color": "Grey, blue iridescent", "luster": "Vitreous", "streak": "White", "hardness": "6–6.5", "tenacity": "Brittle", "opticalProperties": "Biaxial (+)", "specificGravity": "2.68–2.72", "group": "Feldspar (plagioclase)", "composition": "(Na,Ca)Al(Al,Si)Si₂O₈", "crystalSystem": "Triclinic (1)", "magneticProperties": "Non-magnetic" }
+];
+
+        // Theme Toggle Logic
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        const themeLabel = document.getElementById('theme-label');
+        
+        function switchTheme(e) {
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeLabel.textContent = 'Dark';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeLabel.textContent = 'Light';
+                localStorage.setItem('theme', 'light');
+            }    
+        }
+        
+        toggleSwitch.addEventListener('change', switchTheme, false);
+        
+        // Check for saved theme
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            if (currentTheme === 'dark') {
+                toggleSwitch.checked = true;
+                themeLabel.textContent = 'Dark';
+            }
+        }
+
+        // Search and Dropdown Logic
+        const searchInput = document.getElementById('searchInput');
+        const dropdownList = document.getElementById('dropdownList');
+        const mineralCard = document.getElementById('mineralCard');
+        const initialState = document.getElementById('initialState');
+
+        // Render card
+        function renderMineral(mineral) {
+            initialState.style.display = 'none';
+            mineralCard.classList.remove('active');
+            
+            // Force reflow to restart animation
+            void mineralCard.offsetWidth;
+            
+            document.getElementById('mName').textContent = mineral.name;
+            document.getElementById('mFormula').textContent = mineral.composition || mineral.formula || '-';
+            document.getElementById('mSystem').textContent = mineral.crystalSystem || mineral.system || '-';
+            document.getElementById('mColor').textContent = mineral.color;
+            document.getElementById('mHardness').textContent = mineral.hardness;
+            document.getElementById('mGravity').textContent = mineral.specificGravity || mineral.gravity || '-';
+            document.getElementById('mLuster').textContent = mineral.luster;
+            document.getElementById('mCleavage').textContent = mineral.cleavages || mineral.cleavage || '-';
+            document.getElementById('mStreak').textContent = mineral.streak;
+            document.getElementById('mFracture').textContent = mineral.formHabit || mineral.fracture || '-';
+            document.getElementById('mUses').textContent = (mineral.group || '') + ' - ' + (mineral.magneticProperties ? mineral.magneticProperties : mineral.uses ? mineral.uses : '');
+
+            mineralCard.classList.add('active');
+            dropdownList.classList.remove('active');
+            searchInput.value = mineral.name;
+        }
+
+        // Handle input to show dropdown
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            dropdownList.innerHTML = '';
+            
+            if (query.length === 0) {
+                dropdownList.classList.remove('active');
+                return;
+            }
+
+            // Filter minerals by startsWith or includes
+            const matches = mineralData.filter(min => 
+                min.name.toLowerCase().includes(query)
+            );
+
+            if (matches.length > 0) {
+                matches.forEach(min => {
+                    const div = document.createElement('div');
+                    div.className = 'dropdown-item';
+                    
+                    // Highlight matching text
+                    const regex = new RegExp(`(${query})`, "gi");
+                    const highlightedName = min.name.replace(regex, "<strong style='color: var(--primary-color)'>$1</strong>");
+                    
+                    div.innerHTML = `<span>${highlightedName}</span> <span style="font-size: 0.8em; color: var(--text-muted)">${min.composition || min.formula}</span>`;
+                    
+                    div.addEventListener('click', () => {
+                        renderMineral(min);
+                    });
+                    
+                    dropdownList.appendChild(div);
+                });
+                dropdownList.classList.add('active');
+            } else {
+                const div = document.createElement('div');
+                div.className = 'dropdown-item';
+                div.textContent = 'No minerals found.';
+                div.style.color = 'var(--text-muted)';
+                div.style.cursor = 'default';
+                dropdownList.appendChild(div);
+                dropdownList.classList.add('active');
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !dropdownList.contains(e.target)) {
+                dropdownList.classList.remove('active');
+            }
+        });
+
+        // Hide dropdown on escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                dropdownList.classList.remove('active');
+            }
+        });
+
+    </script>
+</body>
+</html>
